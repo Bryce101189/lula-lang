@@ -1,4 +1,12 @@
+#[macro_use]
+extern crate lazy_static;
+
 use std::{env, fs::File, io::Read};
+
+use lexer::Lexer;
+
+pub mod lexer;
+pub mod token;
 
 fn main() {
     let args: Vec<String> = env::args().collect();
@@ -35,5 +43,15 @@ fn main() {
     if in_file.read_to_string(&mut in_file_contents).is_err() {
         eprintln!("Fatal error: Failed to read file contents into string");
         return;
+    }
+
+    let mut lexer = Lexer::new(in_file_contents);
+    let tokens = match lexer.collect_tokens() {
+        Some(t) => t,
+        None => return,
+    };
+
+    for t in tokens {
+        println!("{:?}", t);
     }
 }
