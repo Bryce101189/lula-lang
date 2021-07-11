@@ -104,8 +104,40 @@ impl Lexer {
 
         self.advance(); // Consume leading double-quote
 
+        let mut escaped = false;
+
         while !self.reached_end() && self.peek() != '"' {
-            lexemme.push(self.advance());
+            let mut c = self.advance(); // Get next char in string
+
+            // Match escape sequences
+            if escaped {
+                c = match c {
+                    '\\' => '\\',
+                    '"' => '"',
+
+                    'n' => '\n',
+                    'r' => '\r',
+                    't' => '\t',
+
+                    '0' => '\0',
+
+                    _ => {
+                        eprintln!(
+                            "Lexing error: Unrecognized escape sequence at line {}, column {}",
+                            self.position.as_readable_position().0,
+                            self.position.as_readable_position().1
+                        );
+                        return None;
+                    }
+                };
+
+                escaped = false;
+            } else if c == '\\' {
+                escaped = true;
+                continue; // Ignore escape char
+            }
+
+            lexemme.push(c);
         }
 
         if self.reached_end() {
