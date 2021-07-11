@@ -71,7 +71,15 @@ impl Lexer {
         let mut lexemme = String::new();
         let start_pos = self.position;
 
-        while !self.reached_end() && self.peek().is_ascii_digit() {
+        let mut has_period = false;
+
+        while !self.reached_end()
+            && (self.peek().is_ascii_digit() || self.peek() == '.' && !has_period)
+        {
+            if self.peek() == '.' {
+                has_period = true;
+            }
+
             lexemme.push(self.advance());
         }
 
