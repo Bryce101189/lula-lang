@@ -107,12 +107,14 @@ impl Lexer {
         let mut escaped = false;
 
         while !self.reached_end() && self.peek() != '"' {
+            let curr_pos = self.position;
             let mut c = self.advance(); // Get next char in string
 
             // Match escape sequences
             if escaped {
                 c = match c {
                     '\\' => '\\',
+                    '\n' => '\n',
                     '"' => '"',
 
                     'n' => '\n',
@@ -124,8 +126,8 @@ impl Lexer {
                     _ => {
                         eprintln!(
                             "Lexing error: Unrecognized escape sequence at line {}, column {}",
-                            self.position.as_readable_position().0,
-                            self.position.as_readable_position().1
+                            curr_pos.as_readable_position().0,
+                            curr_pos.as_readable_position().1
                         );
                         return None;
                     }
@@ -135,6 +137,12 @@ impl Lexer {
             } else if c == '\\' {
                 escaped = true;
                 continue; // Ignore escape char
+            } else {
+                // Disallow multi-line strings
+                if c == '\n' {
+                    eprintln!("Lexing error: Encountered newline while scanning string literal at line {}, column {}", curr_pos.as_readable_position().0, curr_pos.as_readable_position().1);
+                    return None;
+                }
             }
 
             lexemme.push(c);
