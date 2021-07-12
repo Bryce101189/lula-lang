@@ -51,7 +51,11 @@ impl Lexer {
         let mut lexemme = String::new();
         let start_pos = self.position;
 
-        while !self.reached_end() && self.peek().is_ascii_alphabetic() {
+        while !self.reached_end()
+            && (self.peek().is_ascii_alphabetic()
+                || self.peek().is_ascii_digit()
+                || self.peek() == '_')
+        {
             lexemme.push(self.advance());
         }
 
