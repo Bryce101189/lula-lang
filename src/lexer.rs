@@ -99,8 +99,10 @@ impl Lexer {
     }
 
     fn collect_string(&mut self) -> Option<Token> {
-        let mut lexemme = String::new();
         let start_pos = self.position;
+
+        let mut lexemme = String::new();
+        let mut esc_pos = start_pos;
 
         self.advance(); // Consume leading double-quote
 
@@ -126,8 +128,8 @@ impl Lexer {
                     _ => {
                         eprintln!(
                             "Lexing error: Unrecognized escape sequence at line {}, column {}",
-                            curr_pos.as_readable_position().0,
-                            curr_pos.as_readable_position().1
+                            esc_pos.as_readable_position().0,
+                            esc_pos.as_readable_position().1
                         );
                         return None;
                     }
@@ -136,6 +138,7 @@ impl Lexer {
                 escaped = false;
             } else if c == '\\' {
                 escaped = true;
+                esc_pos = curr_pos;
                 continue; // Ignore escape char
             } else {
                 // Disallow multi-line strings
