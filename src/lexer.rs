@@ -127,7 +127,8 @@ impl Lexer {
 
                     _ => {
                         eprintln!(
-                            "Lexing error: Unrecognized escape sequence at line {}, column {}",
+                            "Lexing error: Unrecognized escape sequence '\\{}' at line {}, column {}",
+                            c,
                             esc_pos.as_readable_position().0,
                             esc_pos.as_readable_position().1
                         );
