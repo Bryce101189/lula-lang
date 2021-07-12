@@ -249,8 +249,8 @@ impl Lexer {
             // Skip comment line
             if self.peek() == '#' {
                 self.skip_line();
+                self.skip_whitespace();
             }
-            self.skip_whitespace();
 
             // Collect token by type
             let c = self.peek();
