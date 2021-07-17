@@ -4,8 +4,11 @@ extern crate lazy_static;
 use std::{env, fs::File, io::Read};
 
 use lexer::Lexer;
+use parser::Parser;
 
+pub mod expr;
 pub mod lexer;
+pub mod parser;
 pub mod token;
 
 fn main() {
@@ -51,7 +54,11 @@ fn main() {
         None => return,
     };
 
-    for t in tokens {
-        println!("{:?}", t);
-    }
+    let mut parser = Parser::new(tokens);
+    let expr = match parser.parse_expr() {
+        Some(e) => e,
+        None => return,
+    };
+
+    println!("{:#?}", expr);
 }

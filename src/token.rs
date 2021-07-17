@@ -8,7 +8,7 @@ pub struct Token {
 
 impl Token {}
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum TokenKind {
     // Single character tokens
     LeftParen,
