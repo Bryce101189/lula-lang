@@ -1,5 +1,5 @@
 use crate::expr::Expr;
-use crate::token::{Token, TokenKind};
+use crate::token::{Position, Token, TokenKind};
 
 pub struct Parser {
     source_path: String,
@@ -14,6 +14,18 @@ impl Parser {
             tokens,
             cursor: 0,
         }
+    }
+
+    fn display_error<S>(&self, message: S, position: Position)
+    where
+        S: Into<String>,
+    {
+        eprintln!(
+            "Parsing error in file '{}', {}:\n    {}.",
+            self.source_path,
+            position,
+            message.into()
+        );
     }
 
     fn peek(&self) -> Token {
@@ -37,18 +49,21 @@ impl Parser {
             TokenKind::LeftBracket => TokenKind::RightBracket,
 
             _ => {
-                eprintln!(
-                    "Parsing error: Could not find complementary type for token {:?} at {}",
-                    tok.kind, tok.position
+                self.display_error(
+                    format!("Could not find complementary type for token {:?}", tok.kind),
+                    tok.position,
                 );
                 return None;
             }
         };
 
         if tok.kind != expect {
-            eprintln!(
-                "Parsing error: Expected token of type {:?} at {}. Found token of type {:?} instead",
-                expect, tok.position, tok.kind
+            self.display_error(
+                format!(
+                    "Expected token of type {:?}; found token of type {:?} instead",
+                    expect, tok.kind
+                ),
+                tok.position,
             );
             return None;
         }
