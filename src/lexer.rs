@@ -24,13 +24,17 @@ impl Lexer {
     }
 
     fn advance(&mut self) -> char {
+        // Update position
         if self.peek() == '\n' {
+            // Reset column and advance line by one
             self.position.1 = 0;
             self.position.0 += 1;
         } else {
+            // Advance column by one
             self.position.1 += 1;
         }
 
+        // Advance cursor and return previous character
         self.cursor += 1;
         self.source.chars().nth(self.cursor - 1).unwrap_or('\0')
     }
@@ -91,7 +95,10 @@ impl Lexer {
         let value: f64 = match lexemme.parse() {
             Ok(v) => v,
             Err(..) => {
-                eprintln!("Lexing error: Failed to parse number '{}'", lexemme);
+                eprintln!(
+                    "Lexing error: Failed to parse number '{}' at {}",
+                    lexemme, start_pos
+                );
                 return None;
             }
         };
@@ -131,10 +138,8 @@ impl Lexer {
 
                     _ => {
                         eprintln!(
-                            "Lexing error: Unrecognized escape sequence '\\{}' at line {}, column {}",
-                            c,
-                            esc_pos.as_readable_position().0,
-                            esc_pos.as_readable_position().1
+                            "Lexing error: Unrecognized escape sequence '\\{}' at {}",
+                            c, esc_pos
                         );
                         return None;
                     }
@@ -148,7 +153,10 @@ impl Lexer {
             } else {
                 // Disallow multi-line strings
                 if c == '\n' {
-                    eprintln!("Lexing error: Encountered newline while scanning string literal at line {}, column {}", curr_pos.as_readable_position().0, curr_pos.as_readable_position().1);
+                    eprintln!(
+                        "Lexing error: Encountered newline while scanning string literal at {}",
+                        curr_pos
+                    );
                     return None;
                 }
             }
@@ -157,7 +165,10 @@ impl Lexer {
         }
 
         if self.reached_end() {
-            eprintln!("Lexing error: Failed to locate closing double-quote for double-quote at line {}, column {}", start_pos.as_readable_position().0, start_pos.as_readable_position().1);
+            eprintln!(
+                "Lexing error: Failed to locate closing double-quote for double-quote at {}",
+                start_pos
+            );
             return None;
         }
 
@@ -228,10 +239,8 @@ impl Lexer {
             // Unrecognized character
             _ => {
                 eprintln!(
-                    "Lexing error: Unrecognized symbol '{}' found on line {}, column {}",
-                    c,
-                    start_pos.as_readable_position().0,
-                    start_pos.as_readable_position().1
+                    "Lexing error: Unrecognized symbol '{}' found at {}",
+                    c, start_pos
                 );
                 return None;
             }

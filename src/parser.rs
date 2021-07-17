@@ -32,15 +32,18 @@ impl Parser {
             TokenKind::LeftBracket => TokenKind::RightBracket,
 
             _ => {
-                eprintln!("Parsing error: Could not find complementary type for token {:?} at line {}, column {}", tok.kind, tok.position.as_readable_position().0, tok.position.as_readable_position().1);
+                eprintln!(
+                    "Parsing error: Could not find complementary type for token {:?} at {}",
+                    tok.kind, tok.position
+                );
                 return None;
             }
         };
 
         if tok.kind != expect {
             eprintln!(
-                "Parsing error: Expected token of type {:?} at line {}, column {}. Found token of type {:?} instead",
-                expect, tok.position.as_readable_position().0, tok.position.as_readable_position().1, tok.kind
+                "Parsing error: Expected token of type {:?} at {}. Found token of type {:?} instead",
+                expect, tok.position, tok.kind
             );
             return None;
         }

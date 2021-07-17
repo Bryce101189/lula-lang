@@ -1,4 +1,5 @@
-use std::collections::HashMap;
+use core::fmt;
+use std::{collections::HashMap, fmt::Display};
 
 #[derive(Debug, Clone)]
 pub struct Token {
@@ -95,8 +96,8 @@ lazy_static! {
 #[derive(Debug, Clone, Copy)]
 pub struct Position(pub usize, pub usize);
 
-impl Position {
-    pub fn as_readable_position(&self) -> (usize, usize) {
-        (self.0 + 1, self.1 + 1)
+impl Display for Position {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "line {}, column {}", self.0 + 1, self.1 + 1)
     }
 }
