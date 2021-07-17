@@ -2,13 +2,18 @@ use crate::expr::Expr;
 use crate::token::{Token, TokenKind};
 
 pub struct Parser {
+    source_path: String,
     tokens: Vec<Token>,
     cursor: usize,
 }
 
 impl Parser {
-    pub fn new(tokens: Vec<Token>) -> Parser {
-        Parser { tokens, cursor: 0 }
+    pub fn new(source_path: String, tokens: Vec<Token>) -> Parser {
+        Parser {
+            source_path,
+            tokens,
+            cursor: 0,
+        }
     }
 
     fn peek(&self) -> Token {

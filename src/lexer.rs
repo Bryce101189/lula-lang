@@ -1,14 +1,16 @@
 use crate::token::{Literal, Position, Token, TokenKind, KEYWORDS};
 
 pub struct Lexer {
+    source_path: String,
     source: String,
     cursor: usize,
     position: Position,
 }
 
 impl Lexer {
-    pub fn new(source: String) -> Lexer {
+    pub fn new(source_path: String, source: String) -> Lexer {
         Lexer {
+            source_path,
             source,
             cursor: 0,
             position: Position(0, 0),

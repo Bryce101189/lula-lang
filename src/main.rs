@@ -48,13 +48,13 @@ fn main() {
         return;
     }
 
-    let mut lexer = Lexer::new(in_file_contents);
+    let mut lexer = Lexer::new(in_file_path.to_owned(), in_file_contents);
     let tokens = match lexer.collect_tokens() {
         Some(t) => t,
         None => return,
     };
 
-    let mut parser = Parser::new(tokens);
+    let mut parser = Parser::new(in_file_path.to_owned(), tokens);
     let expr = match parser.parse_expr() {
         Some(e) => e,
         None => return,
