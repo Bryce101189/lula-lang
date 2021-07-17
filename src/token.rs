@@ -35,10 +35,7 @@ pub enum TokenKind {
     GreaterEqual,
 
     // Literals
-    Identifier(String),
-    Bool(bool),
-    Number(f64),
-    String(String),
+    Literal(Literal),
 
     // Keywords
     If,
@@ -61,11 +58,19 @@ pub enum TokenKind {
     Eof,
 }
 
+#[derive(Debug, Clone, PartialEq)]
+pub enum Literal {
+    Identifier(String),
+    String(String),
+    Number(f64),
+    Bool(bool),
+}
+
 lazy_static! {
     pub static ref KEYWORDS: HashMap<&'static str, TokenKind> = {
         let mut map = HashMap::new();
-        map.insert("true", TokenKind::Bool(true));
-        map.insert("false", TokenKind::Bool(false));
+        map.insert("true", TokenKind::Literal(Literal::Bool(true)));
+        map.insert("false", TokenKind::Literal(Literal::Bool(false)));
 
         map.insert("if", TokenKind::If);
         map.insert("elif", TokenKind::Elif);

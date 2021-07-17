@@ -52,10 +52,7 @@ impl Parser {
         let tok = self.advance();
 
         match tok.kind {
-            TokenKind::Identifier(..)
-            | TokenKind::Bool(..)
-            | TokenKind::Number(..)
-            | TokenKind::String(..) => Some(Expr::Literal(tok)),
+            TokenKind::Literal(l) => Some(Expr::Literal(l)),
 
             TokenKind::LeftParen | TokenKind::LeftBrace | TokenKind::LeftBracket => {
                 let expr = self.parse_expr()?;

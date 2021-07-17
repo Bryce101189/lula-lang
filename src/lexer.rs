@@ -1,4 +1,4 @@
-use crate::token::{Position, Token, TokenKind, KEYWORDS};
+use crate::token::{Literal, Position, Token, TokenKind, KEYWORDS};
 
 pub struct Lexer {
     source: String,
@@ -62,7 +62,7 @@ impl Lexer {
         // Get token kind
         let token_kind = match KEYWORDS.get(lexemme.as_str()) {
             Some(t) => t.clone(),
-            None => TokenKind::Identifier(lexemme),
+            None => TokenKind::Literal(Literal::Identifier(lexemme)),
         };
 
         Some(Token {
@@ -97,7 +97,7 @@ impl Lexer {
         };
 
         Some(Token {
-            kind: TokenKind::Number(value),
+            kind: TokenKind::Literal(Literal::Number(value)),
             position: start_pos,
         })
     }
@@ -164,7 +164,7 @@ impl Lexer {
         self.advance(); // Consume trailing double-quote
 
         Some(Token {
-            kind: TokenKind::String(lexemme),
+            kind: TokenKind::Literal(Literal::String(lexemme)),
             position: start_pos,
         })
     }
