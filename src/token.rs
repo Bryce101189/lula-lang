@@ -56,6 +56,7 @@ pub enum TokenKind {
     Print,
 
     // Control tokens
+    Newline,
     Eof,
 }
 
@@ -71,6 +72,7 @@ pub enum Literal {
 lazy_static! {
     pub static ref KEYWORDS: HashMap<&'static str, TokenKind> = {
         let mut map = HashMap::new();
+
         map.insert("true", TokenKind::Literal(Literal::Bool(true)));
         map.insert("false", TokenKind::Literal(Literal::Bool(false)));
         map.insert("nil", TokenKind::Literal(Literal::Nil));

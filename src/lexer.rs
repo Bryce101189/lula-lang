@@ -62,7 +62,8 @@ impl Lexer {
     }
 
     fn skip_whitespace(&mut self) {
-        while !self.reached_end() && self.peek().is_ascii_whitespace() {
+        // Don't skip newlines since those are important characters
+        while !self.reached_end() && self.peek().is_ascii_whitespace() && self.peek() != '\n' {
             self.advance();
         }
     }
@@ -295,6 +296,28 @@ impl Lexer {
         })
     }
 
+    pub fn collect_newline(&mut self, prev_token: Option<Token>) -> Option<Token> {
+        let start_pos = self.position;
+        self.advance();
+
+        match prev_token {
+            Some(t) => match t.kind {
+                TokenKind::RightParen
+                | TokenKind::RightBracket
+                | TokenKind::Literal(..)
+                | TokenKind::Break
+                | TokenKind::Continue => Some(Token {
+                    kind: TokenKind::Newline,
+                    position: start_pos,
+                }),
+
+                _ => None,
+            },
+
+            _ => None,
+        }
+    }
+
     pub fn collect_tokens(&mut self) -> Option<Vec<Token>> {
         let mut tokens = Vec::new();
         let mut contains_error = false;
@@ -315,6 +338,14 @@ impl Lexer {
                 'a'..='z' | 'A'..='Z' => self.collect_identifier(),
                 '0'..='9' => self.collect_number(),
                 '"' => self.collect_string(),
+
+                // Exeptionally ignore None case from 'collect_newline' as this may intentionally
+                // refuse to add a newline token based on the previous token
+                '\n' => match self.collect_newline(tokens.last().cloned()) {
+                    Some(t) => Some(t),
+                    None => continue,
+                },
+
                 _ => self.collect_symbol(),
             };
 
