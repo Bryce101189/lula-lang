@@ -9,4 +9,4 @@ ready programming language. :^)
 
 ### Licence
 
-Lula is licenced under the MIT licence, which can be seen [here](LICENCE).
+Lula is licenced under the MIT licence, which can be seen [here](./LICENCE).
