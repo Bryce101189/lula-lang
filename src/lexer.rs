@@ -262,6 +262,7 @@ impl Lexer {
 
     pub fn collect_tokens(&mut self) -> Option<Vec<Token>> {
         let mut tokens = Vec::new();
+        let mut contains_error = false;
 
         while !self.reached_end() {
             // Skip whitespace
@@ -284,10 +285,15 @@ impl Lexer {
 
             match token {
                 Some(t) => tokens.push(t),
-                None => return None,
+                None => contains_error = true,
             }
         }
 
-        Some(tokens)
+        // Return tokens if not errors were found
+        if !contains_error {
+            Some(tokens)
+        } else {
+            None
+        }
     }
 }
