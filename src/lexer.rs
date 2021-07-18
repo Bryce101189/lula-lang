@@ -5,6 +5,10 @@ pub struct Lexer {
     source: String,
     cursor: usize,
     position: Position,
+
+    paren_stack: Vec<Position>,
+    brace_stack: Vec<Position>,
+    bracket_stack: Vec<Position>,
 }
 
 impl Lexer {
@@ -14,6 +18,10 @@ impl Lexer {
             source,
             cursor: 0,
             position: Position(0, 0),
+
+            paren_stack: Vec::new(),
+            brace_stack: Vec::new(),
+            bracket_stack: Vec::new(),
         }
     }
 
@@ -197,12 +205,39 @@ impl Lexer {
 
         let token_kind = match c {
             // Single character tokens
-            '(' => TokenKind::LeftParen,
-            ')' => TokenKind::RightParen,
-            '{' => TokenKind::LeftBrace,
-            '}' => TokenKind::RightBrace,
-            '[' => TokenKind::LeftBracket,
-            ']' => TokenKind::RightBracket,
+            '(' => {
+                self.paren_stack.push(start_pos);
+                TokenKind::LeftParen
+            }
+            ')' => match self.paren_stack.pop() {
+                Some(..) => TokenKind::RightParen,
+                None => {
+                    self.display_error("Unmatched right parenthesis", start_pos);
+                    return None;
+                }
+            },
+            '{' => {
+                self.brace_stack.push(start_pos);
+                TokenKind::LeftBrace
+            }
+            '}' => match self.brace_stack.pop() {
+                Some(..) => TokenKind::RightBrace,
+                None => {
+                    self.display_error("Unmatched right curly-brace", start_pos);
+                    return None;
+                }
+            },
+            '[' => {
+                self.bracket_stack.push(start_pos);
+                TokenKind::LeftBracket
+            }
+            ']' => match self.bracket_stack.pop() {
+                Some(..) => TokenKind::RightBracket,
+                None => {
+                    self.display_error("Unmatched right square-bracket", start_pos);
+                    return None;
+                }
+            },
 
             '+' => TokenKind::Plus,
             '-' => TokenKind::Minus,
@@ -287,6 +322,22 @@ impl Lexer {
                 Some(t) => tokens.push(t),
                 None => contains_error = true,
             }
+        }
+
+        // Check for unmatched brackets
+        for paren in self.paren_stack.clone() {
+            self.display_error("Unmatched left parenthesis", paren);
+            contains_error = true;
+        }
+
+        for brace in self.brace_stack.clone() {
+            self.display_error("Unmatched left curly-brace", brace);
+            contains_error = true;
+        }
+
+        for bracket in self.bracket_stack.clone() {
+            self.display_error("Unmatched left square-bracket", bracket);
+            contains_error = true;
         }
 
         // Return tokens if not errors were found
