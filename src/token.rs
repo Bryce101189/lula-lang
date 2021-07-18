@@ -65,6 +65,7 @@ pub enum Literal {
     String(String),
     Number(f64),
     Bool(bool),
+    Nil,
 }
 
 lazy_static! {
@@ -72,6 +73,7 @@ lazy_static! {
         let mut map = HashMap::new();
         map.insert("true", TokenKind::Literal(Literal::Bool(true)));
         map.insert("false", TokenKind::Literal(Literal::Bool(false)));
+        map.insert("nil", TokenKind::Literal(Literal::Nil));
 
         map.insert("if", TokenKind::If);
         map.insert("elif", TokenKind::Elif);
