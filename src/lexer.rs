@@ -138,6 +138,7 @@ impl Lexer {
         self.advance(); // Consume leading double-quote
 
         let mut escaped = false;
+        let mut valid = true;
 
         while !self.reached_end() && self.peek() != '"' {
             let curr_pos = self.position;
@@ -145,6 +146,8 @@ impl Lexer {
 
             // Match escape sequences
             if escaped {
+                escaped = false;
+
                 c = match c {
                     '\\' => '\\',
                     '\n' => '\n',
@@ -161,11 +164,14 @@ impl Lexer {
                             format!("Unrecognized escape sequence '\\{}'", c),
                             esc_pos,
                         );
-                        return None;
+
+                        valid = false;
+
+                        // What we return here doesn't matter since characters won't be
+                        // appended to 'lexemme' so long as 'valid' is false
+                        '\0'
                     }
                 };
-
-                escaped = false;
             } else if c == '\\' {
                 escaped = true;
                 esc_pos = curr_pos;
@@ -181,7 +187,12 @@ impl Lexer {
                 }
             }
 
-            lexemme.push(c);
+            // If our string is invalid we don't actually care about it's contents anymore.
+            // We'll simply continue scanning the string for errors without actually storing
+            // it's contents
+            if valid {
+                lexemme.push(c);
+            }
         }
 
         if self.reached_end() {
@@ -194,10 +205,14 @@ impl Lexer {
 
         self.advance(); // Consume trailing double-quote
 
-        Some(Token {
-            kind: TokenKind::Literal(Literal::String(lexemme)),
-            position: start_pos,
-        })
+        if valid {
+            Some(Token {
+                kind: TokenKind::Literal(Literal::String(lexemme)),
+                position: start_pos,
+            })
+        } else {
+            None
+        }
     }
 
     fn collect_symbol(&mut self) -> Option<Token> {
