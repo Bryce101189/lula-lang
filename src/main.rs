@@ -6,6 +6,7 @@ use std::{env, fs::File, io::Read};
 use lexer::Lexer;
 use parser::Parser;
 
+pub mod error;
 pub mod expr;
 pub mod lexer;
 pub mod parser;
@@ -60,5 +61,5 @@ fn main() {
         None => return,
     };
 
-    println!("{:#?}", expr);
+    println!("{:#?}", expr.evaluate());
 }
