@@ -69,6 +69,20 @@ pub enum Literal {
     Nil,
 }
 
+impl Display for Literal {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        let val = match self {
+            Literal::Identifier(val) => val.clone(),
+            Literal::String(val) => val.clone(),
+            Literal::Number(val) => val.to_string(),
+            Literal::Bool(val) => val.to_string(),
+            Literal::Nil => String::from("nil"),
+        };
+
+        write!(f, "{}", val)
+    }
+}
+
 lazy_static! {
     pub static ref KEYWORDS: HashMap<&'static str, TokenKind> = {
         let mut map = HashMap::new();

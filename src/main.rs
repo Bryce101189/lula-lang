@@ -50,12 +50,14 @@ fn main() {
         return;
     }
 
+    // Lex file contents into a vector of tokens
     let mut lexer = Lexer::new(in_file_path.to_owned(), in_file_contents);
     let tokens = match lexer.collect_tokens() {
         Some(t) => t,
         None => return,
     };
 
+    // Parse tokens into a vector of statements
     let mut parser = Parser::new(in_file_path.to_owned(), tokens);
 
     let statements = match parser.collect_statements() {
@@ -63,5 +65,11 @@ fn main() {
         None => return,
     };
 
-    println!("{:#?}", statements);
+    // Interpret statements sequentially
+    for statement in statements {
+        if !statement.interpret() {
+            // Return if a runtime error occurs
+            return;
+        }
+    }
 }
