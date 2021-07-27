@@ -28,6 +28,10 @@ impl Parser {
         );
     }
 
+    fn reached_end(&self) -> bool {
+        self.tokens[self.cursor].kind == TokenKind::Eof
+    }
+
     fn peek(&self) -> Token {
         self.tokens[self.cursor].clone()
     }
@@ -39,6 +43,23 @@ impl Parser {
 
     fn is_match(&self, kind: TokenKind) -> bool {
         self.peek().kind == kind
+    }
+
+    fn consume(&mut self, kind: TokenKind) -> bool {
+        if self.is_match(kind.clone()) {
+            self.advance();
+            true
+        } else {
+            self.display_error(
+                format!(
+                    "Expected token of type {:?}, found {:?} instead",
+                    kind,
+                    self.peek().kind
+                ),
+                self.peek().position,
+            );
+            false
+        }
     }
 
     fn expect_closing(&mut self, kind: TokenKind) -> Option<Token> {
@@ -69,6 +90,22 @@ impl Parser {
         }
 
         Some(tok)
+    }
+
+    fn synchronize(&mut self) {
+        self.advance();
+
+        while !self.reached_end() {
+            match self.peek().kind {
+                TokenKind::Newline => {
+                    self.advance();
+                    return;
+                }
+
+                TokenKind::If | TokenKind::Func | TokenKind::Let | TokenKind::Loop => return,
+                _ => self.advance(),
+            };
+        }
     }
 
     fn parse_primary(&mut self) -> Option<Expr> {
