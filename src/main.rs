@@ -10,6 +10,7 @@ pub mod error;
 pub mod expr;
 pub mod lexer;
 pub mod parser;
+pub mod statement;
 pub mod token;
 
 fn main() {
@@ -56,10 +57,11 @@ fn main() {
     };
 
     let mut parser = Parser::new(in_file_path.to_owned(), tokens);
-    let expr = match parser.parse_expr() {
-        Some(e) => e,
+
+    let statements = match parser.collect_statements() {
+        Some(s) => s,
         None => return,
     };
 
-    println!("{:#?}", expr.evaluate());
+    println!("{:#?}", statements);
 }

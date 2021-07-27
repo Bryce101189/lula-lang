@@ -1,4 +1,5 @@
 use crate::expr::Expr;
+use crate::statement::Statement;
 use crate::token::{Position, Token, TokenKind};
 
 pub struct Parser {
@@ -29,7 +30,7 @@ impl Parser {
     }
 
     fn reached_end(&self) -> bool {
-        self.tokens[self.cursor].kind == TokenKind::Eof
+        self.cursor >= self.tokens.len() - 1
     }
 
     fn peek(&self) -> Token {
@@ -217,5 +218,57 @@ impl Parser {
 
     pub fn parse_expr(&mut self) -> Option<Expr> {
         self.parse_or()
+    }
+
+    fn parse_print(&mut self) -> Option<Statement> {
+        if !self.consume(TokenKind::Print) {
+            return None;
+        }
+
+        let value = self.parse_expr()?;
+
+        if !self.consume(TokenKind::Newline) {
+            None
+        } else {
+            Some(Statement::Print(value))
+        }
+    }
+
+    fn parse_statement(&mut self) -> Option<Statement> {
+        match self.peek().kind {
+            TokenKind::Print => self.parse_print(),
+
+            // Return expression
+            _ => {
+                let value = self.parse_expr()?;
+
+                if !self.consume(TokenKind::Newline) {
+                    None
+                } else {
+                    Some(Statement::Expr(value))
+                }
+            }
+        }
+    }
+
+    pub fn collect_statements(&mut self) -> Option<Vec<Statement>> {
+        let mut statements = Vec::new();
+        let mut contains_error = false;
+
+        while !self.reached_end() {
+            match self.parse_statement() {
+                Some(stmt) => statements.push(stmt),
+                None => {
+                    contains_error = true;
+                    self.synchronize();
+                }
+            }
+        }
+
+        if !contains_error {
+            Some(statements)
+        } else {
+            None
+        }
     }
 }
