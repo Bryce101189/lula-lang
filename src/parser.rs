@@ -93,7 +93,9 @@ impl Parser {
     }
 
     fn synchronize(&mut self) {
-        self.advance();
+        if !self.reached_end() {
+            self.advance();
+        }
 
         while !self.reached_end() {
             match self.peek().kind {
@@ -102,7 +104,11 @@ impl Parser {
                     return;
                 }
 
-                TokenKind::If | TokenKind::Func | TokenKind::Let | TokenKind::Loop => return,
+                TokenKind::If
+                | TokenKind::Func
+                | TokenKind::Let
+                | TokenKind::Loop
+                | TokenKind::Eof => return,
                 _ => self.advance(),
             };
         }
