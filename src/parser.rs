@@ -46,10 +46,9 @@ impl Parser {
         self.peek().kind == kind
     }
 
-    fn consume(&mut self, kind: TokenKind) -> bool {
+    fn consume(&mut self, kind: TokenKind) -> Option<Token> {
         if self.is_match(kind.clone()) {
-            self.advance();
-            true
+            Some(self.advance())
         } else {
             self.display_error(
                 format!(
@@ -59,7 +58,7 @@ impl Parser {
                 ),
                 self.peek().position,
             );
-            false
+            None
         }
     }
 
@@ -221,17 +220,13 @@ impl Parser {
     }
 
     fn parse_print(&mut self) -> Option<Statement> {
-        if !self.consume(TokenKind::Print) {
-            return None;
-        }
+        self.consume(TokenKind::Print)?;
 
         let value = self.parse_expr()?;
 
-        if !self.consume(TokenKind::Newline) {
-            None
-        } else {
-            Some(Statement::Print(value))
-        }
+        self.consume(TokenKind::Newline)?;
+
+        Some(Statement::Print(value))
     }
 
     fn parse_statement(&mut self) -> Option<Statement> {
@@ -242,11 +237,9 @@ impl Parser {
             _ => {
                 let value = self.parse_expr()?;
 
-                if !self.consume(TokenKind::Newline) {
-                    None
-                } else {
-                    Some(Statement::Expr(value))
-                }
+                self.consume(TokenKind::Newline)?;
+
+                Some(Statement::Expr(value))
             }
         }
     }
