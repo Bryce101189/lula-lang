@@ -1,6 +1,7 @@
 use crate::expr::Expr;
 use crate::statement::Statement;
-use crate::token::{Position, Token, TokenKind};
+use crate::token::{Literal, Position, Token, TokenKind};
+use std::mem::discriminant;
 
 pub struct Parser {
     source_path: String,
@@ -62,6 +63,24 @@ impl Parser {
         }
     }
 
+    fn consume_discriminant(&mut self, kind: TokenKind) -> Option<Token> {
+        let disc_kind = discriminant(&kind);
+
+        if discriminant(&self.peek().kind) == disc_kind {
+            Some(self.advance())
+        } else {
+            self.display_error(
+                format!(
+                    "Expected token of type {:?}, found {:?} instead",
+                    kind,
+                    self.peek().kind
+                ),
+                self.peek().position,
+            );
+            None
+        }
+    }
+
     fn expect_closing(&mut self, kind: TokenKind) -> Option<Token> {
         let tok = self.advance();
         let expect = match kind {
@@ -109,6 +128,7 @@ impl Parser {
                 | TokenKind::Let
                 | TokenKind::Loop
                 | TokenKind::Eof => return,
+
                 _ => self.advance(),
             };
         }
@@ -229,9 +249,6 @@ impl Parser {
         self.consume(TokenKind::Print)?;
 
         let value = self.parse_expr()?;
-
-        self.consume(TokenKind::Newline)?;
-
         Some(Statement::Print(value))
     }
 
@@ -242,12 +259,66 @@ impl Parser {
             // Return expression
             _ => {
                 let value = self.parse_expr()?;
-
-                self.consume(TokenKind::Newline)?;
-
                 Some(Statement::Expr(value))
             }
         }
+    }
+
+    fn parse_var_decl(&mut self) -> Option<Statement> {
+        self.consume(TokenKind::Let);
+
+        let identifier = self
+            .consume_discriminant(TokenKind::Literal(Literal::Identifier(String::from("any"))))?;
+
+        let name = match identifier.kind {
+            TokenKind::Literal(Literal::Identifier(val)) => val,
+            _ => return None,
+        };
+
+        let initializer = if self.is_match(TokenKind::Equal) {
+            let equals = self.advance();
+
+            // Attempt to get expression, returning None on failure
+            if !self.reached_end() {
+                let pre = self.peek();
+                let expr = self.parse_expr();
+
+                match expr {
+                    Some(..) => expr,
+                    None => {
+                        self.display_error(
+                            format!(
+                                "Expected expession after assignment operator, found {:?} instead",
+                                pre.kind
+                            ),
+                            equals.position,
+                        );
+                        return None;
+                    }
+                }
+            } else {
+                self.display_error(
+                    "Expected expession after assignment operator",
+                    equals.position,
+                );
+                return None;
+            }
+        } else {
+            None
+        };
+
+        Some(Statement::VarDecl(name, initializer))
+    }
+
+    fn parse_declaration(&mut self) -> Option<Statement> {
+        let decl = match self.peek().kind {
+            TokenKind::Let => self.parse_var_decl()?,
+            _ => self.parse_statement()?,
+        };
+
+        self.consume(TokenKind::Newline)?;
+
+        Some(decl)
     }
 
     pub fn collect_statements(&mut self) -> Option<Vec<Statement>> {
@@ -255,7 +326,7 @@ impl Parser {
         let mut contains_error = false;
 
         while !self.reached_end() {
-            match self.parse_statement() {
+            match self.parse_declaration() {
                 Some(stmt) => statements.push(stmt),
                 None => {
                     contains_error = true;
