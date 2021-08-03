@@ -295,9 +295,6 @@ impl Lexer {
                 }
             }
 
-            // Control characters
-            '\0' => TokenKind::Eof,
-
             // Unrecognized character
             _ => {
                 self.display_error(format!("Encountered unrecognized symbol {}", c), start_pos);
@@ -385,6 +382,12 @@ impl Lexer {
             self.display_error("Unmatched left square-bracket", bracket);
             contains_error = true;
         }
+
+        // Append end-of-file token to vector
+        tokens.push(Token {
+            kind: TokenKind::Eof,
+            position: self.position,
+        });
 
         // Return tokens if not errors were found
         if !contains_error {
